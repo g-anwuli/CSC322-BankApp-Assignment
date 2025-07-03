@@ -1,0 +1,18 @@
+# Build results
+bin/
+obj/
+*.user
+*.suo
+
+# VS Code settings
+.vscode/
+
+# OS generated files
+.DS_Store
+
+# User-specific files
+*.swp
+*.tmp
+
+# Test results
+TestResults/
