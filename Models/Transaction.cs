@@ -45,7 +45,7 @@ namespace BankApp.Models
         /// <summary>
         /// The ID of the account associated with this transaction.
         /// </summary>
-        public Guid AccountId { get; set; }
+        public required string AccountNumber { get; set; }
 
         /// <summary>
         /// The amount of money involved in the transaction.
@@ -66,6 +66,6 @@ namespace BankApp.Models
         /// <summary>
         /// Timestamp of when the transaction occurred (in UTC).
         /// </summary>
-        public DateTime Timestamp { get; set; } = DateTime.UtcNow;
+        public DateTime Timestamp { get; set; } = DateTime.Now;
     }
 }

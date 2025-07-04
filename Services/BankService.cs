@@ -5,17 +5,55 @@ namespace BankApp.Services
 {
     public interface IBankService
     {
-        Customer CreateCustomer(string firstname, string lastname, string email, string password, AccountType accountType);
-        Account CreateAccount(Guid customerId, AccountType type);
-        void Transfer(string from, string to, decimal amount);
+        (Customer, Account) CreateCustomer(string firstname, string lastname, string email, string password, string accountType);
+        Account CreateAccount(Guid customerId, string type);
+        Account CreateAccountByEmail(string Email, string type);
         void Withdraw(string from, string to, decimal amount);
+
+        List<Transaction> GetTransactions(string accountNumber);
+        List<Account> GetAccountsByCustomerEmail(string email);
+        List<Account> GetAccountsByCustomerId(Guid customerId);
+        Customer? GetCustomerByEmail(string email);
     }
 
 
     public class BankService : IBankService
     {
-        BankDb Db = new();
-        public Customer CreateCustomer(string firstname, string lastname, string email, string password, AccountType type)
+        private BankDb Db;
+
+        public BankService(BankDb db)
+        {
+            Db = db ?? throw new ArgumentNullException(nameof(db), "Database cannot be null");
+        }
+
+        public List<Account> GetAccountsByCustomerId(Guid customerId)
+        {
+            return Db.Accounts.Find(acc => acc.CustomerId == customerId);
+        }
+
+        public List<Account> GetAccountsByCustomerEmail(string email)
+        {
+            Customer? customer = Db.Customers.FindOne(c => c.Email == email);
+            if (customer == null)
+            {
+                throw new InvalidOperationException("Customer not found");
+            }
+
+            return Db.Accounts.Find(acc => acc.CustomerId == customer.Id);
+        }
+
+        public Customer? GetCustomerByEmail(string email)
+        {
+            return Db.Customers.FindOne(c => c.Email == email);
+        }
+
+
+        public List<Transaction> GetTransactions(string accountNumber)
+        {
+            return Db.Transactions.Find(t => t.AccountNumber == accountNumber);
+        }
+
+        public (Customer, Account) CreateCustomer(string firstname, string lastname, string email, string password, string type)
         {
             Customer? existingCustomer = Db.Customers.FindOne(c => c.Email == email);
             if (existingCustomer != null)
@@ -33,40 +71,42 @@ namespace BankApp.Services
             Db.Customers.Add(customer);
             Db.Customers.Commit();
 
-            CreateAccount(customer.Id, type);
+            Account acc = CreateAccount(customer.Id, type);
 
-            return customer;
+            return (customer, acc);
         }
 
-        public Account CreateAccount(Guid customerId, AccountType type)
+        public Account CreateAccountByEmail(string email, string type)
         {
-            Account acc;
-            if (type == AccountType.Savings)
+            Customer? customer = Db.Customers.FindOne(c => c.Email == email);
+            if (customer == null)
             {
-                Account? existingAccount = Db.Accounts.FindOne(c => c.CustomerId == customerId);
+                throw new InvalidOperationException("Customer with this email does not exist");
+            }
 
-                if (existingAccount != null)
-                {
-                    throw new InvalidOperationException("Customer already has a savings account");
-                }
+            return CreateAccount(customer.Id, type);
+        }
 
+        public Account CreateAccount(Guid customerId, string type)
+        {
+            Account? existingAccount = Db.Accounts.FindOne(c => c.CustomerId == customerId && c.AccountType == type);
+            if (existingAccount != null)
+            {
+                throw new InvalidOperationException($"Customer already has a {type} account");
+            }
+
+            Account acc;
+            if (type == "savings")
+            {
                 acc = new SavingsAccount
                 {
                     CustomerId = customerId,
-                    AccountNumber = Account.GenerateAccountNumber(),
-                    InterestRate = 0.05m
+                    AccountNumber = Account.GenerateAccountNumber()
                 }
                 ;
             }
             else
             {
-                Account? existingAccount = Db.Accounts.FindOne(c => c.CustomerId == customerId);
-
-                if (existingAccount != null)
-                {
-                    throw new InvalidOperationException("Customer already has a savings account");
-                }
-
                 acc = new CurrentAccount
                 {
                     CustomerId = customerId,
@@ -80,30 +120,18 @@ namespace BankApp.Services
             return acc;
         }
 
-        public void Transfer(string from, string to, decimal amount)
-        {
-            Account? acc1 = Db.Accounts.FindOne(c => c.AccountNumber == from);
-            Account? acc2 = Db.Accounts.FindOne(c => c.AccountNumber == from);
-            if (acc1 == null || acc2 == null)
-            {
-                throw new InvalidOperationException("One or both accounts not found");
-            }
-
-            if (acc1.CustomerId != acc2.CustomerId)
-            {
-                throw new InvalidOperationException("Accounts belong to different customers");
-            }
-
-            FundTransfer(acc1, acc2, amount);
-        }
-
         public void Withdraw(string from, string to, decimal amount)
         {
             Account? acc1 = Db.Accounts.FindOne(c => c.AccountNumber == from);
-            Account? acc2 = Db.Accounts.FindOne(c => c.AccountNumber == from);
+            Account? acc2 = Db.Accounts.FindOne(c => c.AccountNumber == to);
             if (acc1 == null || acc2 == null)
             {
                 throw new InvalidOperationException("One or both accounts not found");
+            }
+
+            if (amount > acc1.Balance)
+            {
+                throw new InvalidOperationException("Insufficient funds in the source account");
             }
 
             FundTransfer(acc1, acc2, amount);
@@ -111,65 +139,62 @@ namespace BankApp.Services
 
         private void FundTransfer(Account acc1, Account acc2, decimal amount)
         {
-            if (acc1 is SavingsAccount acc)
+            if (acc1.Balance < amount)
             {
-                Transaction interest1_tx = new()
-                {
-                    AccountId = acc.Id,
-                    Amount = acc.Interest,
-                    Type = "interest_before_withdraw",
-                    Details = new InterestDetails
-                    {
-                        InterestRate = acc.InterestRate,
-                    }
-                };
-                Db.Transactions.Add(interest1_tx);
-                acc.ApplyInterest();
+                throw new InvalidOperationException("Insufficient balance.");
             }
 
-            if (acc2 is SavingsAccount acc_2)
+            if (acc1 is SavingsAccount savings1)
             {
-                Transaction interest2_tx = new()
+                Db.Transactions.Add(new Transaction
                 {
-                    AccountId = acc_2.Id,
-                    Amount = acc_2.Interest,
-                    Type = "interest_before_deposit",
-                    Details = new InterestDetails
-                    {
-                        InterestRate = acc_2.InterestRate,
-                    }
-                };
-                Db.Transactions.Add(interest2_tx);
-                acc_2.ApplyInterest();
+                    AccountNumber = savings1.AccountNumber!,
+                    Amount = savings1.Interest,
+                    Type = "interest_applied_before_withdraw",
+                    Details = new InterestDetails { InterestRate = savings1.InterestRate }
+                });
+                savings1.ApplyInterest();
+                Db.Accounts.Update(savings1);
+
+            }
+
+            if (acc2 is SavingsAccount savings2)
+            {
+                Db.Transactions.Add(new Transaction
+                {
+                    AccountNumber = savings2.AccountNumber!,
+                    Amount = savings2.Interest,
+                    Type = "interest_applied_before_deposit",
+                    Details = new InterestDetails { InterestRate = savings2.InterestRate }
+                });
+
+                savings2.ApplyInterest();
+                Db.Accounts.Update(savings2);
+
             }
 
             acc1.Withdraw(amount);
-            Transaction withdraw_tx = new()
+            Db.Accounts.Update(acc1);
+            Db.Transactions.Add(new Transaction
             {
-                AccountId = acc1.Id,
+                AccountNumber = acc1.AccountNumber!,
                 Amount = amount,
                 Type = "withdraw",
-                Details = new WithdrawDetails
-                {
-                    Reciever = acc2.Id
-                }
-            };
-            Db.Transactions.Add(withdraw_tx);
+                Details = new WithdrawDetails { Reciever = acc2.Id }
+            });
 
             acc2.Deposit(amount);
-            Transaction deposit_tx = new()
+            Db.Accounts.Update(acc2);
+            Db.Transactions.Add(new Transaction
             {
-                AccountId = acc2.Id,
+                AccountNumber = acc2.AccountNumber!,
                 Amount = amount,
-                Type = "desposit",
-                Details = new DepositDetails
-                {
-                    Sender = acc1.Id
-                }
-            };
+                Type = "deposit",
+                Details = new DepositDetails { Sender = acc1.Id }
+            });
 
-            Db.Transactions.Add(deposit_tx);
             Db.Transactions.Commit();
+            Db.Accounts.Commit();
         }
     }
 }

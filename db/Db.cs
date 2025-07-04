@@ -32,9 +32,10 @@ namespace BankApp.Db
         /// </summary>
         public BankDb()
         {
-            Customers = new DbTable<Customer>("users", "Id");
-            Accounts = new DbTable<Account>("accounts", "AccountNumber");
-            Transactions = new DbTable<Transaction>("transactions", "TransactionId");
+            string dataPathFolder = "/Users/macbook/Documents/practice/c#/BankApp/db/store";
+            Customers = new DbTable<Customer>("users", "Id", dataPathFolder);
+            Accounts = new DbTable<Account>("accounts", "Id", dataPathFolder);
+            Transactions = new DbTable<Transaction>("transactions", "Id", dataPathFolder);
         }
     }
 }

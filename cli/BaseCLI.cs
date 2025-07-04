@@ -25,7 +25,8 @@ namespace BankApp.CLI
         {
             RegisterCommand("--help", "Displays all available commands.", args => ShowHelp());
             RegisterCommand("-h", "Alias for --help", args => ShowHelp());
-            RegisterCommand("quit", "Exits the application.", args => Quit());
+            RegisterCommand("exit", "Exits the application.", args => Quit());
+            RegisterCommand("clear", "Clears the console.", args => Console.Clear());
         }
 
         public void RegisterCommand(string name, string description, Action<string[]> action)
@@ -35,7 +36,8 @@ namespace BankApp.CLI
 
         public void Run()
         {
-            Console.WriteLine($"Welcome to {_appName} CLI. Type --help to see available commands.");
+            Console.WriteLine($"Welcome to {_appName} CLI.");
+            ShowHelp();
 
             while (_running)
             {
@@ -70,7 +72,7 @@ namespace BankApp.CLI
             Console.WriteLine("Exiting...");
         }
 
-        public static void PrintColoredText(string text, ConsoleColor color)
+        public static void PrintColoredText(string text, ConsoleColor color = ConsoleColor.White)
         {
             Console.ForegroundColor = color;
             Console.WriteLine(text);
@@ -79,7 +81,7 @@ namespace BankApp.CLI
 
         public static void PrintHeader(string text)
         {
-            PrintColoredText($"\n=== {text.ToUpper()} ===\n", ConsoleColor.Cyan);
+            PrintColoredText($"\n=== {text.ToUpper()} ===\n", ConsoleColor.DarkBlue);
         }
 
         public static void PrintInfo(string label, string value, ConsoleColor labelColor = ConsoleColor.Yellow)
@@ -165,24 +167,6 @@ namespace BankApp.CLI
                 Console.WriteLine(row);
                 Console.WriteLine(borderLine);
             }
-        }
-
-        // Print table with all properties (no property names needed)
-        public static void PrintTable<T>(IEnumerable<T> items)
-        {
-            var itemsList = items.ToList();
-            if (!itemsList.Any()) return;
-
-            var type = typeof(T);
-            var properties = type.GetProperties().Where(p => p.CanRead).ToArray();
-
-            if (!properties.Any()) return;
-
-            var propertyNames = properties.Select(p => p.Name).ToArray();
-            var columnSelectors = properties.Select(prop =>
-                new Func<T, string>(item => prop.GetValue(item)?.ToString() ?? "")).ToArray();
-
-            PrintTableWithHeaders(itemsList, propertyNames, columnSelectors);
         }
 
     }

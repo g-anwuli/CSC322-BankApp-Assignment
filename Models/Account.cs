@@ -1,22 +1,6 @@
 namespace BankApp.Models
 {
     /// <summary>
-    /// Represents the type of a bank account.
-    /// </summary>
-    public enum AccountType
-    {
-        /// <summary>
-        /// A savings account.
-        /// </summary>
-        Savings,
-
-        /// <summary>
-        /// A current (checking) account.
-        /// </summary>
-        Current
-    }
-
-    /// <summary>
     /// Represents the currency of a bank account.
     /// </summary>
     public enum CurrencyType
@@ -33,10 +17,10 @@ namespace BankApp.Models
     }
 
     /// <summary>
-    /// Abstract base class representing a bank account.
+    /// base class representing a bank account.
     /// Contains shared properties and methods for different account types.
     /// </summary>
-    public abstract class Account
+    public class Account
     {
         /// <summary>
         /// Unique identifier for the account.
@@ -46,7 +30,7 @@ namespace BankApp.Models
         /// <summary>
         /// Current account balance (protected from external modification).
         /// </summary>
-        protected decimal Balance { get; set; } = 0;
+        public decimal Balance { get; set; } = 10_000.00m; //this is just for test case so we can have something to work with
 
         /// <summary>
         /// Identifier for the customer who owns the account.
@@ -58,6 +42,8 @@ namespace BankApp.Models
         /// </summary>
         public string? AccountNumber { get; set; }
 
+        public string AccountType { get; set; } = "unknown";
+
         /// <summary>
         /// Returns the current balance of the account.
         /// </summary>
@@ -65,6 +51,16 @@ namespace BankApp.Models
         {
             return Balance;
         }
+
+        /// <summary>
+        /// The date and time the customer record was created.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// The date and time the account was last updated.
+        /// </summary>
+        public DateTime UpdatedAt { get; set; } = DateTime.Now;
 
         /// <summary>
         /// Generates a random 10-digit account number.
@@ -80,13 +76,13 @@ namespace BankApp.Models
         /// Deposits a specified amount into the account.
         /// </summary>
         /// <param name="amount">The amount to deposit.</param>
-        public abstract void Deposit(decimal amount);
+        public virtual void Deposit(decimal amount) { }
 
         /// <summary>
         /// Withdraws a specified amount from the account.
         /// </summary>
         /// <param name="amount">The amount to withdraw.</param>
-        public abstract void Withdraw(decimal amount);
+        public virtual void  Withdraw(decimal amount) { }
     }
 
 
@@ -95,11 +91,17 @@ namespace BankApp.Models
     /// </summary>
     public class CurrentAccount : Account
     {
+        public CurrentAccount()
+        {
+            AccountType = "current";
+        }
+
         /// <inheritdoc />
         public override void Deposit(decimal amount)
         {
             if (amount <= 0) throw new ArgumentException("Amount must be positive");
             Balance += amount;
+            UpdatedAt = DateTime.Now;
         }
 
         /// <inheritdoc />
@@ -108,6 +110,7 @@ namespace BankApp.Models
             if (amount > Balance)
                 throw new InvalidOperationException("Insufficient funds");
             Balance -= amount;
+            UpdatedAt = DateTime.Now;
         }
     }
 
@@ -117,10 +120,14 @@ namespace BankApp.Models
     /// </summary>
     public class SavingsAccount : Account
     {
+        public SavingsAccount()
+        {
+            AccountType = "savings";
+        }
         /// <summary>
         /// Annual interest rate (e.g., 0.05 for 5%).
         /// </summary>
-        public decimal InterestRate { get; set; }
+        public decimal InterestRate { get; set; } = 0.05m;
 
         /// <summary>
         /// The last date interest was applied to the account.
@@ -148,6 +155,7 @@ namespace BankApp.Models
             {
                 Balance += Interest;
                 LastInterestDate = DateTime.Now;
+                UpdatedAt = DateTime.Now;
             }
         }
 
@@ -156,6 +164,7 @@ namespace BankApp.Models
         {
             if (amount <= 0) throw new ArgumentException("Amount must be positive");
             Balance += amount;
+            UpdatedAt = DateTime.Now;
         }
 
         /// <inheritdoc />
@@ -164,6 +173,7 @@ namespace BankApp.Models
             if (amount > Balance)
                 throw new InvalidOperationException("Insufficient funds");
             Balance -= amount;
+            UpdatedAt = DateTime.Now;
         }
     }
 }

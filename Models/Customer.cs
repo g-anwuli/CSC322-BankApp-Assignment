@@ -31,12 +31,12 @@ namespace BankApp.Models
         public required string Password { get; set; }
 
         /// <summary>
-        /// The date and time the customer account was created.
+        /// The date and time the customer record was created.
         /// </summary>
         public DateTime CreatedAt { get; set; } = DateTime.Now;
 
         /// <summary>
-        /// The date and time the customer account was last updated.
+        /// The date and time the customer record was last updated.
         /// </summary>
         public DateTime UpdatedAt { get; set; } = DateTime.Now;
     }
