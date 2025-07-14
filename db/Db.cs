@@ -16,15 +16,21 @@ namespace BankApp.Db
 
         /// <summary>
         /// Table for managing bank account records.
-        /// Uses "AccountNumber" as the unique identifier.
+        /// Uses "Id" as the unique identifier.
         /// </summary>
         public DbTable<Account> Accounts { get; private set; }
 
         /// <summary>
         /// Table for managing transaction records.
-        /// Uses "TransactionId" as the unique identifier.
+        /// Uses "Id" as the unique identifier.
         /// </summary>
         public DbTable<Transaction> Transactions { get; private set; }
+
+        /// <summary>
+        /// Table for managing interest rate records.
+        /// Uses "Id" as the unique identifier.
+        /// </summary>
+        public DbTable<InterestRate> InterestRates { get; private set; }
 
         /// <summary>
         /// Initializes the bank database context and binds each table
@@ -36,6 +42,7 @@ namespace BankApp.Db
             Customers = new DbTable<Customer>("users", "Id", dataPathFolder);
             Accounts = new DbTable<Account>("accounts", "Id", dataPathFolder);
             Transactions = new DbTable<Transaction>("transactions", "Id", dataPathFolder);
+            InterestRates = new DbTable<InterestRate>("interests", "Id", dataPathFolder);
         }
     }
 }

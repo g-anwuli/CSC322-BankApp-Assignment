@@ -14,6 +14,11 @@ namespace BankApp.Services
         List<Account> GetAccountsByCustomerEmail(string email);
         List<Account> GetAccountsByCustomerId(Guid customerId);
         Customer? GetCustomerByEmail(string email);
+
+        /// <summary>
+        /// Updates the customer's details.
+        /// </summary>
+        public void UpdateDetails(string firstName, string lastName, string email)
     }
 
 
@@ -76,6 +81,16 @@ namespace BankApp.Services
             return (customer, acc);
         }
 
+        public void UpdateDetails(Customer customer, string firstName, string lastName, string email)
+        {
+            customer.FirstName = firstName;
+            customer.LastName = lastName;
+            customer.Email = email;
+            customer.UpdatedAt = DateTime.Now;
+            Db.Customers.Update(customer);
+            Db.Customers.Commit();
+        }
+
         public Account CreateAccountByEmail(string email, string type)
         {
             Customer? customer = Db.Customers.FindOne(c => c.Email == email);
@@ -100,17 +115,24 @@ namespace BankApp.Services
             {
                 acc = new SavingsAccount
                 {
-                    CustomerId = customerId,
-                    AccountNumber = Account.GenerateAccountNumber()
-                }
-                ;
+                    CustomerId = customerId
+                };
+
+                interest = new InterestRate
+                {
+                    AccountId = acc.Id,
+                    Rate = 0.05m, // Example interest rate
+                    LastUpdated = DateTime.Now,
+                    CreatedAt = DateTime.Now
+                };
+
+                Db.InterestRates.Add(interest);
             }
             else
             {
                 acc = new CurrentAccount
                 {
-                    CustomerId = customerId,
-                    AccountNumber = Account.GenerateAccountNumber()
+                    CustomerId = customerId
                 };
             }
 
@@ -146,20 +168,24 @@ namespace BankApp.Services
 
             if (acc1 is SavingsAccount savings1)
             {
+                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == savings1.Id);
                 Db.Transactions.Add(new Transaction
                 {
                     AccountNumber = savings1.AccountNumber!,
                     Amount = savings1.Interest,
                     Type = "interest_applied_before_withdraw",
-                    Details = new InterestDetails { InterestRate = savings1.InterestRate }
+                    Details = new InterestDetails { InterestRate = interest.Rate }
                 });
-                savings1.ApplyInterest();
+                savings1.ApplyInterest(interest);
+                interest.LastUpdated = DateTime.Now;
+                interest.LastCollected = DateTime.Now;
+                Db.InterestRates.Update(interest);
                 Db.Accounts.Update(savings1);
-
             }
 
             if (acc2 is SavingsAccount savings2)
             {
+                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == savings1.Id);
                 Db.Transactions.Add(new Transaction
                 {
                     AccountNumber = savings2.AccountNumber!,
@@ -168,7 +194,10 @@ namespace BankApp.Services
                     Details = new InterestDetails { InterestRate = savings2.InterestRate }
                 });
 
-                savings2.ApplyInterest();
+                savings2.ApplyInterest(interest);
+                interest.LastUpdated = DateTime.Now;
+                interest.LastCollected = DateTime.Now;
+                Db.InterestRates.Update(interest);
                 Db.Accounts.Update(savings2);
 
             }
@@ -195,6 +224,7 @@ namespace BankApp.Services
 
             Db.Transactions.Commit();
             Db.Accounts.Commit();
+            Db.InterestRates.Commit();
         }
     }
 }

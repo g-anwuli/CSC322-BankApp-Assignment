@@ -148,6 +148,77 @@ namespace BankApp
                 }
             });
 
+            cli.RegisterCommand("update-name", "[Authenticated] Update your profile name.", arg =>
+            {
+                if (!authService.isAuthenticated())
+                {
+                    BaseCli.PrintColoredText("You must be logged in to create an account.", ConsoleColor.Red);
+                    return;
+                }
+
+                Console.Write("Enter new first name: ");
+                var first = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(first))
+                {
+                    BaseCli.PrintColoredText("first name cannot be null or empty", ConsoleColor.Red);
+                    return;
+                }
+
+                Console.Write("Enter new last name: ");
+                var last = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(last))
+                {
+                    BaseCli.PrintColoredText("last name cannot be null or empty", ConsoleColor.Red);
+                    return;
+                }
+
+                try
+                {
+                    Customer customer = bankService.GetCustomerByEmail(authService._currentEmail)!;
+                    bankService.UpdateDetails(customer, first, last, customer.Email);
+                    BaseCli.PrintColoredText($"\nProfile updated successfully", ConsoleColor.Green);
+                }
+                catch (System.Exception ex)
+                {
+                    BaseCli.PrintColoredText($"Error changing name: {ex.Message}", ConsoleColor.Red);
+                }
+            });
+
+            cli.RegisterCommand("update-email", "[Authenticated] Update your profile email.", arg =>
+            {
+                if (!authService.isAuthenticated())
+                {
+                    BaseCli.PrintColoredText("You must be logged in to create an account.", ConsoleColor.Red);
+                    return;
+                }
+
+                Console.Write("Enter new email: ");
+                var email = Console.ReadLine();
+                if (string.IsNullOrWhiteSpace(email))
+                {
+                    BaseCli.PrintColoredText("New email cannot be null", ConsoleColor.Red);
+                    return;
+                }
+
+                Customer? existing = bankService.GetCustomerByEmail(email);
+                if (existing != null && authService._currentEmail != email)
+                {
+                    BaseCli.PrintColoredText("Email already in use", ConsoleColor.Red);
+                    return;
+                }
+
+                try
+                {
+                    Customer customer = bankService.GetCustomerByEmail(authService._currentEmail)!;
+                    bankService.UpdateDetails(customer, customer.FirstName, customer.LastName, email);
+                    BaseCli.PrintColoredText($"\nProfile updated successfully", ConsoleColor.Green);
+                }
+                catch (System.Exception ex)
+                {
+                    BaseCli.PrintColoredText($"Error changing name: {ex.Message}", ConsoleColor.Red);
+                }
+            });
+
             cli.RegisterCommand("transfer", "[Authenticated] Transfer money between accounts", arg =>
             {
                 if (!authService.isAuthenticated())

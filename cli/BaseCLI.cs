@@ -84,15 +84,6 @@ namespace BankApp.CLI
             PrintColoredText($"\n=== {text.ToUpper()} ===\n", ConsoleColor.DarkBlue);
         }
 
-        public static void PrintInfo(string label, string value, ConsoleColor labelColor = ConsoleColor.Yellow)
-        {
-            Console.ForegroundColor = labelColor;
-            Console.Write(label.PadRight(20));
-            Console.ResetColor();
-            Console.WriteLine(value);
-        }
-
-
         public static void PrintTable<T>(IEnumerable<T> items, params Func<T, string>[] columnSelectors)
         {
             var itemsList = items.ToList();

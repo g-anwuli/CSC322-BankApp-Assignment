@@ -17,6 +17,55 @@ namespace BankApp.Models
     }
 
     /// <summary>
+    /// Represents an interest rate for a bank account.
+    /// </summary>
+    public class InterestRate
+    {
+        /// <summary>
+        /// Unique identifier for the interest rate record.
+        /// This is automatically generated when a new interest rate is created.
+        /// </summary>
+        public Guid Id { get; set; } = Guid.NewGuid();
+        /// <summary>
+        /// The unique identifier for the interest rate record.
+        /// </summary>
+        public Guid AccountId { get; set; }
+
+        /// <summary>
+        /// The interest rate for the account.
+        /// </summary>
+        public decimal Rate { get; set; }
+
+        /// <summary>
+        /// The date when the interest rate was last updated.
+        /// </summary>
+        public DateTime LastUpdated { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// The date when the interest was collected.
+        /// </summary>
+        public DateTime LastCollected { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// The date when the interest rate was created.
+        /// </summary>
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
+
+        /// <summary>
+        /// Updates the interest rate for the account.
+        /// </summary>
+        public void UpdateRate(decimal newRate)
+        {
+            if (newRate < 0)
+            {
+                throw new ArgumentException("Interest rate must be non-negative.");
+            }
+            Rate = newRate;
+            LastUpdated = DateTime.Now;
+        }
+    }
+
+    /// <summary>
     /// base class representing a bank account.
     /// Contains shared properties and methods for different account types.
     /// </summary>
@@ -28,29 +77,31 @@ namespace BankApp.Models
         public Guid Id { get; set; } = Guid.NewGuid();
 
         /// <summary>
-        /// Current account balance (protected from external modification).
-        /// </summary>
-        public decimal Balance { get; set; } = 10_000.00m; //this is just for test case so we can have something to work with
-
-        /// <summary>
         /// Identifier for the customer who owns the account.
         /// </summary>
         public Guid CustomerId { get; set; }
 
         /// <summary>
+        /// Current account balance (protected from external modification).
+        /// </summary>
+        private decimal Balance { get; set; }; //this is just for test case so we can have something to work with
+
+        /// <summary>
         /// Human-readable account number.
         /// </summary>
-        public string? AccountNumber { get; set; }
+        public string AccountNumber { get; set; };
 
+        /// <summary>
+        /// Account type (e.g., "current", "savings").
+        /// Default is "unknown" to ensure all accounts have a type.
+        /// </summary>
         public string AccountType { get; set; } = "unknown";
 
         /// <summary>
-        /// Returns the current balance of the account.
+        /// The currency type of the account.
+        /// Default is NGN (Nigerian Naira).
         /// </summary>
-        public decimal GetBalance()
-        {
-            return Balance;
-        }
+        public CurrencyType Currency { get; set; } = CurrencyType.NGN;
 
         /// <summary>
         /// The date and time the customer record was created.
@@ -73,16 +124,46 @@ namespace BankApp.Models
         }
 
         /// <summary>
-        /// Deposits a specified amount into the account.
+        /// Retrieves the current balance of the account.
+        /// This method is used to access the balance without allowing external modification.
         /// </summary>
-        /// <param name="amount">The amount to deposit.</param>
-        public virtual void Deposit(decimal amount) { }
+        public decimal GetBalance()
+        {
+            return Balance;
+        }
 
         /// <summary>
-        /// Withdraws a specified amount from the account.
+        /// Deposits a specified amount into the current account.
+        /// </summary>
+        /// <param name="amount">The amount to deposit.</param>
+        public void Deposit(decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Deposit amount must be positive.");
+            }
+
+            Balance += amount;
+        }
+
+        /// <summary>
+        /// Withdraws a specified amount from the current account.
         /// </summary>
         /// <param name="amount">The amount to withdraw.</param>
-        public virtual void  Withdraw(decimal amount) { }
+        public void Withdraw(decimal amount)
+        {
+            if (amount <= 0)
+            {
+                throw new ArgumentException("Withdrawal amount must be positive.");
+            }
+
+            if (amount > Balance)
+            {
+                throw new InvalidOperationException("Insufficient funds for withdrawal.");
+            }
+
+            Balance -= amount;
+        }
     }
 
 
@@ -95,23 +176,6 @@ namespace BankApp.Models
         {
             AccountType = "current";
         }
-
-        /// <inheritdoc />
-        public override void Deposit(decimal amount)
-        {
-            if (amount <= 0) throw new ArgumentException("Amount must be positive");
-            Balance += amount;
-            UpdatedAt = DateTime.Now;
-        }
-
-        /// <inheritdoc />
-        public override void Withdraw(decimal amount)
-        {
-            if (amount > Balance)
-                throw new InvalidOperationException("Insufficient funds");
-            Balance -= amount;
-            UpdatedAt = DateTime.Now;
-        }
     }
 
 
@@ -123,57 +187,25 @@ namespace BankApp.Models
         public SavingsAccount()
         {
             AccountType = "savings";
+
         }
-        /// <summary>
-        /// Annual interest rate (e.g., 0.05 for 5%).
-        /// </summary>
-        public decimal InterestRate { get; set; } = 0.05m;
 
-        /// <summary>
-        /// The last date interest was applied to the account.
-        /// </summary>
-        public DateTime LastInterestDate { get; set; } = DateTime.Now;
-
-        /// <summary>
-        /// Calculates the interest accumulated since the last interest date.
-        /// </summary>
-        public decimal Interest
+        public void ApplyInterest(InterestRate interest)
         {
-            get
+            if (interest.AccountId != Id)
             {
-                var days = (decimal)(DateTime.Now - LastInterestDate).TotalDays;
-                return Balance * InterestRate * (days / 365);
+                throw new InvalidOperationException("Interest rate does not belong to this account.");
             }
-        }
-
-        /// <summary>
-        /// Applies any accumulated interest to the account balance.
-        /// </summary>
-        public void ApplyInterest()
-        {
-            if (Interest > 0)
+            ;
+            if (account.InterestRate < 0 || Balance < 0)
             {
-                Balance += Interest;
-                LastInterestDate = DateTime.Now;
-                UpdatedAt = DateTime.Now;
+                throw new ArgumentException("Interest rate and balance must be non-negative.");
             }
-        }
+            ;
 
-        /// <inheritdoc />
-        public override void Deposit(decimal amount)
-        {
-            if (amount <= 0) throw new ArgumentException("Amount must be positive");
-            Balance += amount;
-            UpdatedAt = DateTime.Now;
-        }
+            time_diff = (DateTime.Now - interest.LastCollected) / 365.0;
 
-        /// <inheritdoc />
-        public override void Withdraw(decimal amount)
-        {
-            if (amount > Balance)
-                throw new InvalidOperationException("Insufficient funds");
-            Balance -= amount;
-            UpdatedAt = DateTime.Now;
+            Balance += Balance * interest.Rate * time_diff;
         }
     }
 }
