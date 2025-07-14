@@ -18,7 +18,7 @@ namespace BankApp.Services
         /// <summary>
         /// Updates the customer's details.
         /// </summary>
-        public void UpdateDetails(string firstName, string lastName, string email)
+        public void UpdateDetails(Customer customer, string firstName, string lastName, string email);
     }
 
 
@@ -115,10 +115,11 @@ namespace BankApp.Services
             {
                 acc = new SavingsAccount
                 {
-                    CustomerId = customerId
+                    CustomerId = customerId,
+                    AccountNumber = Account.GenerateAccountNumber(),
                 };
 
-                interest = new InterestRate
+                InterestRate interest = new InterestRate
                 {
                     AccountId = acc.Id,
                     Rate = 0.05m, // Example interest rate
@@ -132,7 +133,8 @@ namespace BankApp.Services
             {
                 acc = new CurrentAccount
                 {
-                    CustomerId = customerId
+                    CustomerId = customerId,
+                    AccountNumber = Account.GenerateAccountNumber(),
                 };
             }
 
@@ -166,40 +168,23 @@ namespace BankApp.Services
                 throw new InvalidOperationException("Insufficient balance.");
             }
 
-            if (acc1 is SavingsAccount savings1)
+            if (acc1.AccountType == "savings")
             {
-                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == savings1.Id);
+                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == acc1.Id)!;
+                decimal accrued = interest.CalculateAccrued(acc1.Balance);
+                acc1.Balance += accrued;
+                interest.LastUpdated = DateTime.Now;
+                interest.LastCollected = DateTime.Now;
+                Db.InterestRates.Update(interest);
+                Db.Accounts.Update(acc1);
+
                 Db.Transactions.Add(new Transaction
                 {
-                    AccountNumber = savings1.AccountNumber!,
-                    Amount = savings1.Interest,
+                    AccountNumber = acc1.AccountNumber!,
+                    Amount = accrued,
                     Type = "interest_applied_before_withdraw",
                     Details = new InterestDetails { InterestRate = interest.Rate }
                 });
-                savings1.ApplyInterest(interest);
-                interest.LastUpdated = DateTime.Now;
-                interest.LastCollected = DateTime.Now;
-                Db.InterestRates.Update(interest);
-                Db.Accounts.Update(savings1);
-            }
-
-            if (acc2 is SavingsAccount savings2)
-            {
-                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == savings1.Id);
-                Db.Transactions.Add(new Transaction
-                {
-                    AccountNumber = savings2.AccountNumber!,
-                    Amount = savings2.Interest,
-                    Type = "interest_applied_before_deposit",
-                    Details = new InterestDetails { InterestRate = savings2.InterestRate }
-                });
-
-                savings2.ApplyInterest(interest);
-                interest.LastUpdated = DateTime.Now;
-                interest.LastCollected = DateTime.Now;
-                Db.InterestRates.Update(interest);
-                Db.Accounts.Update(savings2);
-
             }
 
             acc1.Withdraw(amount);
@@ -211,6 +196,26 @@ namespace BankApp.Services
                 Type = "withdraw",
                 Details = new WithdrawDetails { Reciever = acc2.Id }
             });
+
+
+            if (acc2.AccountType == "savings")
+            {
+                InterestRate interest = Db.InterestRates.FindOne(i => i.AccountId == acc2.Id)!;
+                decimal accrued = interest.CalculateAccrued(acc2.Balance);
+                acc2.Balance += accrued;
+                interest.LastUpdated = DateTime.Now;
+                interest.LastCollected = DateTime.Now;
+                Db.InterestRates.Update(interest);
+                Db.Accounts.Update(acc2);
+
+                Db.Transactions.Add(new Transaction
+                {
+                    AccountNumber = acc2.AccountNumber!,
+                    Amount = accrued,
+                    Type = "interest_applied_before_deposit",
+                    Details = new InterestDetails { InterestRate = interest.Rate }
+                });
+            }
 
             acc2.Deposit(amount);
             Db.Accounts.Update(acc2);

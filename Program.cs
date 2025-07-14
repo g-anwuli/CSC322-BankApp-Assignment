@@ -109,12 +109,28 @@ namespace BankApp
                     if (customer != null)
                     {
                         List<Account> accs = bankService.GetAccountsByCustomerId(customer.Id);
-                        BaseCli.PrintTableWithHeaders(accs, ["Account Number", "Balance", "Type"], a => a.AccountNumber!, a => $"₦{a.GetBalance()}", a => a.AccountType);
+                        BaseCli.PrintTableWithHeaders(accs, ["Account Number", "Balance", "Type"], a => a.AccountNumber!, a => $"₦{a.Balance}", a => a.AccountType);
                     }
                 }
                 else
                 {
                     BaseCli.PrintColoredText(message, ConsoleColor.Red);
+                }
+            });
+            cli.RegisterCommand("accounts", "[Authenticated] Create a new bank account", arg =>
+            {
+                if (!authService.isAuthenticated())
+                {
+                    BaseCli.PrintColoredText("You must be logged in to create an account.", ConsoleColor.Red);
+                    return;
+                }
+
+                Customer? customer = bankService.GetCustomerByEmail(authService._currentEmail);
+                if (customer != null)
+                {
+                    BaseCli.PrintHeader("Bank Accounts");
+                    List<Account> accs = bankService.GetAccountsByCustomerId(customer.Id);
+                    BaseCli.PrintTableWithHeaders(accs, ["Account Number", "Balance", "Type"], a => a.AccountNumber!, a => $"₦{a.Balance}", a => a.AccountType);
                 }
             });
 
@@ -139,7 +155,7 @@ namespace BankApp
                     Account acc = bankService.CreateAccountByEmail(authService._currentEmail, type);
                     BaseCli.PrintColoredText($"\nAccount created successfully", ConsoleColor.Green);
                     List<Account> accs = bankService.GetAccountsByCustomerId(acc.CustomerId);
-                    BaseCli.PrintTableWithHeaders(accs, ["Account Number", "Balance", "Type"], a => a.AccountNumber!, a => $"₦{a.GetBalance()}", a => a.AccountType);
+                    BaseCli.PrintTableWithHeaders(accs, ["Account Number", "Balance", "Type"], a => a.AccountNumber!, a => $"₦{a.Balance}", a => a.AccountType);
 
                 }
                 catch (System.Exception ex)

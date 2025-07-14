@@ -63,6 +63,20 @@ namespace BankApp.Models
             Rate = newRate;
             LastUpdated = DateTime.Now;
         }
+        public decimal CalculateAccrued(decimal balance)
+        {
+            if (Rate < 0 || balance < 0)
+            {
+                throw new ArgumentException("Interest rate and balance must be non-negative.");
+            }
+            ;
+
+            double time_diff = (DateTime.Now - LastCollected).TotalDays / 365.0;
+            Console.WriteLine(time_diff);
+            decimal accrued = balance * Rate * (decimal)time_diff;
+
+            return accrued;
+        }
     }
 
     /// <summary>
@@ -84,12 +98,12 @@ namespace BankApp.Models
         /// <summary>
         /// Current account balance (protected from external modification).
         /// </summary>
-        private decimal Balance { get; set; }; //this is just for test case so we can have something to work with
+        public decimal Balance { get; set; } = 10_000.00m; //this is just for test case so we can have something to work with
 
         /// <summary>
         /// Human-readable account number.
         /// </summary>
-        public string AccountNumber { get; set; };
+        public required string AccountNumber { get; set; }
 
         /// <summary>
         /// Account type (e.g., "current", "savings").
@@ -121,15 +135,6 @@ namespace BankApp.Models
         {
             var random = new Random();
             return random.Next(1000000000, int.MaxValue).ToString();
-        }
-
-        /// <summary>
-        /// Retrieves the current balance of the account.
-        /// This method is used to access the balance without allowing external modification.
-        /// </summary>
-        public decimal GetBalance()
-        {
-            return Balance;
         }
 
         /// <summary>
@@ -188,24 +193,6 @@ namespace BankApp.Models
         {
             AccountType = "savings";
 
-        }
-
-        public void ApplyInterest(InterestRate interest)
-        {
-            if (interest.AccountId != Id)
-            {
-                throw new InvalidOperationException("Interest rate does not belong to this account.");
-            }
-            ;
-            if (account.InterestRate < 0 || Balance < 0)
-            {
-                throw new ArgumentException("Interest rate and balance must be non-negative.");
-            }
-            ;
-
-            time_diff = (DateTime.Now - interest.LastCollected) / 365.0;
-
-            Balance += Balance * interest.Rate * time_diff;
         }
     }
 }

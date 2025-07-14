@@ -84,7 +84,7 @@ namespace BankApp.Db
             {
                 throw new Exception($"Identifier '{IDENTIFIER}' value is null in type {typeof(T).Name}");
             }
-            var index = Records.FindIndex(r => GetIDValue(data).Equals(idValue));
+            var index = Records.FindIndex(r => GetIDValue(r).Equals(idValue));
             if (index >= 0)
             {
                 Records[index] = data;

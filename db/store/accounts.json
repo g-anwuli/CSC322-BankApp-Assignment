@@ -1,0 +1,22 @@
+[
+  {
+    "Id": "2b628657-a39e-47dd-97de-d0244d807429",
+    "CustomerId": "629c0a2e-4f5f-4a3d-b41d-6356ba64bd28",
+    "Balance": 10000.029282193861431298100968,
+    "AccountNumber": "1703019546",
+    "AccountType": "savings",
+    "Currency": 0,
+    "CreatedAt": "2025-07-14T20:20:02.38044+01:00",
+    "UpdatedAt": "2025-07-14T20:20:02.38044+01:00"
+  },
+  {
+    "Id": "e6668807-c597-4055-9258-e1df7fa4675f",
+    "CustomerId": "629c0a2e-4f5f-4a3d-b41d-6356ba64bd28",
+    "Balance": 10000.00,
+    "AccountNumber": "1626252040",
+    "AccountType": "current",
+    "Currency": 0,
+    "CreatedAt": "2025-07-14T20:20:21.380295+01:00",
+    "UpdatedAt": "2025-07-14T20:20:21.380305+01:00"
+  }
+]

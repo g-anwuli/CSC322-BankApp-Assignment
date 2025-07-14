@@ -1,0 +1,122 @@
+[
+  {
+    "Id": "549143fe-7b5f-4de4-8384-f4b14f78f0ad",
+    "AccountNumber": "1703019546",
+    "Amount": 0.000644744228817860000000,
+    "Type": "interest_applied_before_withdraw",
+    "Details": {
+      "InterestRate": 0.05
+    },
+    "Timestamp": "2025-07-14T20:20:43.047512+01:00"
+  },
+  {
+    "Id": "e227b5b6-31a9-4464-bcd6-9da5a69df37c",
+    "AccountNumber": "1703019546",
+    "Amount": 1000,
+    "Type": "withdraw",
+    "Details": {
+      "Reciever": "e6668807-c597-4055-9258-e1df7fa4675f"
+    },
+    "Timestamp": "2025-07-14T20:20:43.048073+01:00"
+  },
+  {
+    "Id": "40e5560b-8a7e-41b6-9799-01028b49a287",
+    "AccountNumber": "1626252040",
+    "Amount": 1000,
+    "Type": "deposit",
+    "Details": {
+      "Sender": "2b628657-a39e-47dd-97de-d0244d807429"
+    },
+    "Timestamp": "2025-07-14T20:20:43.0485+01:00"
+  },
+  {
+    "Id": "1527892b-6591-439f-b3ab-44333910f0b0",
+    "AccountNumber": "1703019546",
+    "Amount": 0.02767699988901575000000,
+    "Type": "interest_applied_before_withdraw",
+    "Details": {
+      "InterestRate": 0.05
+    },
+    "Timestamp": "2025-07-14T20:49:48.701134+01:00"
+  },
+  {
+    "Id": "8983245e-b835-41ea-95be-8c70b610fc42",
+    "AccountNumber": "1703019546",
+    "Amount": 2500,
+    "Type": "withdraw",
+    "Details": {
+      "Reciever": "e6668807-c597-4055-9258-e1df7fa4675f"
+    },
+    "Timestamp": "2025-07-14T20:49:48.701954+01:00"
+  },
+  {
+    "Id": "f35cae13-4775-4062-9088-ffcdcdd14c36",
+    "AccountNumber": "1626252040",
+    "Amount": 2500,
+    "Type": "deposit",
+    "Details": {
+      "Sender": "2b628657-a39e-47dd-97de-d0244d807429"
+    },
+    "Timestamp": "2025-07-14T20:49:48.702107+01:00"
+  },
+  {
+    "Id": "5d74bf79-1b08-4226-a075-6cfcac7d0a55",
+    "AccountNumber": "1703019546",
+    "Amount": 0.0003254309835520503620878932,
+    "Type": "interest_applied_before_withdraw",
+    "Details": {
+      "InterestRate": 0.05
+    },
+    "Timestamp": "2025-07-14T20:50:16.067521+01:00"
+  },
+  {
+    "Id": "36661caf-2f77-4131-bf1a-68b701707a39",
+    "AccountNumber": "1703019546",
+    "Amount": 1000,
+    "Type": "withdraw",
+    "Details": {
+      "Reciever": "e6668807-c597-4055-9258-e1df7fa4675f"
+    },
+    "Timestamp": "2025-07-14T20:50:16.067548+01:00"
+  },
+  {
+    "Id": "04ac1e24-cc70-4355-96e8-86586c45da0e",
+    "AccountNumber": "1626252040",
+    "Amount": 1000,
+    "Type": "deposit",
+    "Details": {
+      "Sender": "2b628657-a39e-47dd-97de-d0244d807429"
+    },
+    "Timestamp": "2025-07-14T20:50:16.067556+01:00"
+  },
+  {
+    "Id": "515d67c4-ae5f-4aad-be88-307ea8f111a2",
+    "AccountNumber": "1626252040",
+    "Amount": 3500,
+    "Type": "withdraw",
+    "Details": {
+      "Reciever": "2b628657-a39e-47dd-97de-d0244d807429"
+    },
+    "Timestamp": "2025-07-14T20:52:20.245753+01:00"
+  },
+  {
+    "Id": "8448286e-9925-44f9-aab1-4802f85ff928",
+    "AccountNumber": "1703019546",
+    "Amount": 0.0012797629888634977388800423,
+    "Type": "interest_applied_before_deposit",
+    "Details": {
+      "InterestRate": 0.05
+    },
+    "Timestamp": "2025-07-14T20:52:20.25886+01:00"
+  },
+  {
+    "Id": "22a704a3-1f74-43e3-9b20-4e4aac4c77c2",
+    "AccountNumber": "1703019546",
+    "Amount": 3500,
+    "Type": "deposit",
+    "Details": {
+      "Sender": "e6668807-c597-4055-9258-e1df7fa4675f"
+    },
+    "Timestamp": "2025-07-14T20:52:20.259146+01:00"
+  }
+]
